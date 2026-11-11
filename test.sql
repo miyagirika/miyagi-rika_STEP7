@@ -21,7 +21,7 @@ CREATE TABLE orders (
 );
 
 -- 注文詳細
-CREATE TABLE orders_items (
+CREATE TABLE order_items (
    id INT PRIMARY KEY,
   order_id INT,
   product_id INT,
@@ -58,7 +58,7 @@ INSERT INTO orders(id,user_id,order_date)VALUES
 (6,5,'2024-06-05');
 
 -- 注文詳細
-INSERT INTO orders_items(id,order_id,product_id,quantity)VALUES
+INSERT INTO order_items(id,order_id,product_id,quantity)VALUES
 (1,1,1,1), --山田がテレビを1台
 (2,1,3,2), --山田が電子レンジを2台
 (3,2,2,1), --山田が冷蔵庫を1台
@@ -100,12 +100,12 @@ ON orders.user_id = users.id;
 -- 設問6
 SELECT
     products.product_name,
-    orders_items.quantity,
+    order_items.quantity,
     products.price,
-    orders_items.quantity * products.price AS amount
-FROM orders_items
+    order_items.quantity * products.price AS amount
+FROM order_items
 JOIN products
-ON orders_items.product_id = products.id;
+ON order_items.product_id = products.id;
 
 -- 設問7
 SELECT
@@ -121,38 +121,38 @@ GROUP BY users.id, users.name;
 SELECT
     users.id,
     users.name,
-    COALESCE(SUM(orders_items.quantity * products.price), 0) AS total_amount
+    COALESCE(SUM(order_items.quantity * products.price), 0) AS total_amount
 FROM users
 LEFT JOIN orders
 ON users.id = orders.user_id
-LEFT JOIN orders_items
-ON orders.id = orders_items.order_id
+LEFT JOIN order_items
+ON orders.id = order_items.order_id
 LEFT JOIN products
-ON orders_items.product_id = products.id
+ON order_items.product_id = products.id
 GROUP BY users.id, users.name;
 
 -- 設問9
 SELECT
     users.name,
-    SUM(orders_items.quantity * products.price) AS total_amount
+    SUM(order_items.quantity * products.price) AS total_amount
 FROM users
 JOIN orders
 ON users.id = orders.user_id
-JOIN orders_items
-ON orders.id = orders_items.order_id
+JOIN order_items
+ON orders.id = order_items.order_id
 JOIN products
-ON orders_items.product_id = products.id
-GROUP BY orders.id, users.id, users.name
+ON order_items.product_id = products.id
+GROUP BY users.id, users.name
 ORDER BY total_amount DESC
 LIMIT 1;
 
 -- 設問10
 SELECT
     products.product_name,
-    COALESCE(SUM(orders_items.quantity), 0) AS total_quantity
+    COALESCE(SUM(order_items.quantity), 0) AS total_quantity
 FROM products
-LEFT JOIN orders_items
-ON products.id = orders_items.product_id
+LEFT JOIN order_items
+ON products.id = order_items.product_id
 GROUP BY products.id, products.product_name;
 
 -- 設問11
@@ -164,7 +164,7 @@ WHERE id NOT IN (
 
 -- 設問12
 SELECT order_id
-FROM orders_items
+FROM order_items
 GROUP BY order_id
 HAVING COUNT(DISTINCT product_id) >= 2;
 
@@ -173,10 +173,10 @@ SELECT DISTINCT users.name
 FROM users
 JOIN orders
 ON users.id = orders.user_id
-JOIN orders_items
-ON orders.id = orders_items.order_id
+JOIN order_items
+ON orders.id = order_items.order_id
 JOIN products
-ON orders_items.product_id = products.id
+ON order_items.product_id = products.id
 WHERE products.product_name = 'テレビ';
 
 -- 設問14
@@ -185,25 +185,25 @@ SELECT
     orders.order_date,
     users.name,
     products.product_name,
-    orders_items.quantity,
+    order_items.quantity,
     products.price,
-    orders_items.quantity * products.price AS amount
+    order_items.quantity * products.price AS amount
 FROM orders
 JOIN users
 ON orders.user_id = users.id
-JOIN orders_items
-ON orders.id = orders_items.order_id
+JOIN order_items
+ON orders.id = order_items.order_id
 JOIN products
-ON orders_items.product_id = products.id
+ON order_items.product_id = products.id
 ORDER BY orders.order_date;
 
 -- 設問15
 SELECT
     products.product_name,
-    SUM(orders_items.quantity) AS total_quantity
+    SUM(order_items.quantity) AS total_quantity
 FROM products
-JOIN orders_items
-ON products.id = orders_items.product_id
+JOIN order_items
+ON products.id = order_items.product_id
 GROUP BY products.id, products.product_name
 ORDER BY total_quantity DESC
 LIMIT 1;
@@ -220,12 +220,12 @@ ORDER BY order_month;
 SELECT * FROM products
 WHERE id NOT IN (
     SELECT product_id
-    FROM orders_items
+    FROM order_items
 );
 
 -- 設問18
-CREATE INDEX idx_orders_items_product_id
-ON orders_items(product_id);
+CREATE INDEX idx_order_items_product_id
+ON order_items(product_id);
 
 -- 設問19
 SELECT
@@ -237,12 +237,12 @@ JOIN (
     SELECT
         orders.id AS order_id,
         orders.user_id,
-        SUM(orders_items.quantity * products.price) AS total_amount
+        SUM(order_items.quantity * products.price) AS total_amount
     FROM orders
-    JOIN orders_items
-        ON orders.id = orders_items.order_id
+    JOIN order_items
+        ON orders.id = order_items.order_id
     JOIN products
-        ON orders_items.product_id = products.id
+        ON order_items.product_id = products.id
     GROUP BY orders.id, orders.user_id
 ) AS order_totals
     ON users.id = order_totals.user_id
@@ -271,7 +271,7 @@ INSERT INTO orders (id, user_id, order_date)
 VALUES (10, 1, '2025-06-10');
 
 -- 設問24
-INSERT INTO orders_items (id, order_id, product_id, quantity)
+INSERT INTO order_items (id, order_id, product_id, quantity)
 VALUES (10, 10, 6, 1);
 
 -- 設問25
@@ -308,20 +308,20 @@ WHERE name = '高橋健一';
 -- 「orders」の削除結果確認
 SELECT * FROM orders
 WHERE id = 6;
--- 「orders_items」の削除結果確認
-SELECT * FROM orders_items
+-- 「order_items」の削除結果確認
+SELECT * FROM order_items
 WHERE order_id = 6;
 
 -- 設問29
-DELETE FROM orders_items
+DELETE FROM order_items
 WHERE order_id = 5;
 
 -- 設問30
 DELETE FROM products
 WHERE NOT EXISTS (
     SELECT 1
-    FROM orders_items
-    WHERE orders_items.product_id = products.id
+    FROM order_items
+    WHERE order_items.product_id = products.id
 );
 
  
